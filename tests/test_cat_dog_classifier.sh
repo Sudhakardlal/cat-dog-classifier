@@ -2,7 +2,7 @@
 
 set -e
 
-DOCKER_IMAGE_NAME="student_image"
+DOCKER_IMAGE_NAME="cat-dog-classifier"
 DOCKER_CONTAINER_NAME="grading_container"
 DOCKERFILE="Dockerfile"
 TRAINING_SCRIPT="train.py"
