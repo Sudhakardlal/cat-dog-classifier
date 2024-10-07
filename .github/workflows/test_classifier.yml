@@ -1,29 +1,30 @@
-
-#!/bin/bash
-
-set -e
-
-DOCKER_IMAGE_NAME="catdog_classifier_image"
-DOCKER_CONTAINER_NAME="grading_container"
-DOCKERFILE="Dockerfile"
-TRAINING_SCRIPT="train.py"
-
-# 1. Check the Dockerfile exists
-if [ ! -f $DOCKERFILE ]; then
-    echo "🚫 $DOCKER_IMAGE_NAME does not exist"
-    exit 1
-fi
-
-echo "🚚 Building the Docker image..."
-docker build -t $DOCKER_IMAGE_NAME .
-
-# 2. Check the size of the Docker image
-image_size=$(docker inspect $DOCKER_IMAGE_NAME --format='{{.Size}}')
-image_size_gb=$((image_size/1000000000))
-image_size_mb=$(((image_size%1000000000)/1000000))
-if [ $image_size -gt 1100000000 ]; then
-    echo "💥 Docker image is too large. Size: $image_size_gb GB $image_size_mb MB"
-    exit 1
-else
-    echo "✅ Docker image size is acceptable. Size: $image_size_gb GB $image_size_mb MB"
-fi
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Test Docker and Training
+      id: test-docker-and-training
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Test Docker and Training
+        setup-command: ''
+        command: bash ./tests/grading.sh
+        timeout: 10
+        max-score: 500
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        TEST-DOCKER-AND-TRAINING_RESULTS: "${{steps.test-docker-and-training.outputs.result}}"
+      with:
+        runners: test-docker-and-training
