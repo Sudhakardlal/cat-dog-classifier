@@ -19,7 +19,7 @@ jobs:
       with:
         test-name: Test Docker and Training
         setup-command: ''
-        command: bash ./tests/grading.sh
+        command: bash ./tests/test_cat_dog_classifier.sh
         timeout: 10
         max-score: 500
     - name: Autograding Reporter
