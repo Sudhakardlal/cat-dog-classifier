@@ -10,8 +10,10 @@ from pathlib import Path
 import hydra
 from omegaconf import DictConfig
 from pytorch_lightning import Trainer
+import pytorch_lightning as pl
 from pytorch_lightning.loggers import Logger
 from pytorch_lightning.callbacks import Callback
+from pytorch_lightning.callbacks import ModelCheckpoint
 import rootutils
 from utils.logging_utils import setup_logger, task_wrapper, logger, log_metrics_table
 
@@ -67,9 +69,13 @@ def main(cfg: DictConfig):
 
     # Create trainer
     logger.info(f"Instantiating trainer <{cfg.trainer._target_}>")
+  
+    checkpoint_callback = ModelCheckpoint(save_on_train_epoch_end=True,dirpath='logs/checkpoint',filename="model_tr")
+   
     trainer: Trainer = hydra.utils.instantiate(
-        cfg.trainer, callbacks=callbacks, logger=loggers, _convert_="partial"
+        cfg.trainer, callbacks=checkpoint_callback, logger=loggers, _convert_="partial"
     )
+    #trainer.fit(model, datamodule)
 
     # Train the model
     if cfg.get("train"):
